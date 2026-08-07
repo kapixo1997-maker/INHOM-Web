@@ -1,65 +1,118 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
+import { Menu, X, MessageCircle } from "lucide-react";
+
+const menu = [
+  { name: "Inicio", href: "#inicio" },
+  { name: "Nosotros", href: "#nosotros" },
+  { name: "Servicios", href: "#servicios" },
+  { name: "Propiedades", href: "#propiedades" },
+  { name: "Contacto", href: "#contacto" },
+];
 
 export default function Navbar() {
-  return (
-    <motion.header
-      initial={{ y: -80 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6 }}
-      className="sticky top-0 z-50 border-b border-white/20 bg-white/80 backdrop-blur-xl shadow-sm"
-    >
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+  const [open, setOpen] = useState(false);
 
-        {/* Logo */}
+  return (
+    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm">
+      <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-6 lg:px-10">
+
+        {/* LOGO */}
         <Link
           href="/"
-          className="text-4xl font-black tracking-tight text-[#17495B] transition hover:scale-105"
+          className="transition-transform duration-300 hover:scale-105"
         >
-          INHOM
+          <Image
+            src="/logo/inhom-logo.png"
+            alt="INHOM Bienes Raíces"
+            width={180}
+            height={60}
+            priority
+          />
         </Link>
 
-        {/* Menú */}
-        <nav className="hidden items-center gap-10 md:flex">
+        {/* MENÚ ESCRITORIO */}
+        <nav className="hidden items-center gap-10 lg:flex">
+          {menu.map((item) => (
+            <a
+              key={item.name}
+              href={item.href}
+              className="group relative text-[16px] font-medium text-gray-700 transition-colors duration-300 hover:text-[#17495B]"
+            >
+              {item.name}
 
-          <a
-            href="#inicio"
-            className="relative font-medium text-gray-700 transition hover:text-[#17495B] after:absolute after:-bottom-2 after:left-0 after:h-[2px] after:w-0 after:bg-[#17495B] after:transition-all hover:after:w-full"
-          >
-            Inicio
-          </a>
-
-          <a
-            href="#propiedades"
-            className="relative font-medium text-gray-700 transition hover:text-[#17495B] after:absolute after:-bottom-2 after:left-0 after:h-[2px] after:w-0 after:bg-[#17495B] after:transition-all hover:after:w-full"
-          >
-            Propiedades
-          </a>
-
-          <a
-            href="#contacto"
-            className="relative font-medium text-gray-700 transition hover:text-[#17495B] after:absolute after:-bottom-2 after:left-0 after:h-[2px] after:w-0 after:bg-[#17495B] after:transition-all hover:after:w-full"
-          >
-            Contacto
-          </a>
-
+              <span className="absolute -bottom-2 left-0 h-[2px] w-0 bg-[#17495B] transition-all duration-300 group-hover:w-full" />
+            </a>
+          ))}
         </nav>
 
-        {/* Botón WhatsApp */}
-        <motion.a
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.96 }}
-          href="https://wa.me/529831543460"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="rounded-xl bg-green-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-green-700"
-        >
-          WhatsApp
-        </motion.a>
+        {/* LADO DERECHO */}
+        <div className="flex items-center gap-4">
 
+          <motion.a
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            href="https://wa.me/529831543460"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden items-center gap-2 rounded-full bg-[#25D366] px-6 py-3 font-semibold text-white shadow-md transition hover:bg-[#20BE5C] lg:flex"
+          >
+            <MessageCircle size={20} />
+            Hablar con un asesor
+          </motion.a>
+
+          {/* BOTÓN MÓVIL */}
+
+          <button
+            onClick={() => setOpen(!open)}
+            className="rounded-xl p-2 transition hover:bg-gray-100 lg:hidden"
+          >
+            {open ? <X size={30} /> : <Menu size={30} />}
+          </button>
+                    {/* MENÚ MÓVIL */}
+          {open && (
+            <motion.div
+              initial={{ opacity: 0, y: -15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="absolute left-0 top-full w-full border-t border-gray-200 bg-white shadow-xl lg:hidden"
+            >
+              <nav className="flex flex-col px-6 py-6">
+
+                {menu.map((item) => (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="rounded-xl px-4 py-4 text-lg font-medium text-gray-700 transition hover:bg-[#17495B]/10 hover:text-[#17495B]"
+                  >
+                    {item.name}
+                  </a>
+                ))}
+
+                <motion.a
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  href="https://wa.me/529831543460"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 flex items-center justify-center gap-3 rounded-xl bg-[#25D366] px-6 py-4 font-semibold text-white shadow-md"
+                >
+                  <MessageCircle size={22} />
+                  Hablar con un asesor
+                </motion.a>
+
+              </nav>
+            </motion.div>
+          )}
+
+        </div>
       </div>
-    </motion.header>
+    </header>
   );
 }

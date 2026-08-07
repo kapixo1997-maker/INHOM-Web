@@ -1,4 +1,13 @@
+import Image from "next/image";
 import Link from "next/link";
+import {
+  BedDouble,
+  Bath,
+  Car,
+  MapPin,
+  Ruler,
+  ArrowRight,
+} from "lucide-react";
 import { Propiedad } from "../data/propiedades";
 
 type Props = {
@@ -7,17 +16,19 @@ type Props = {
 
 export default function PropertyCard({ propiedad }: Props) {
   return (
-    <article className="group overflow-hidden rounded-3xl bg-white border border-gray-200 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl">
+    <article className="group overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-md transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl">
 
       {/* Imagen */}
       <div className="relative overflow-hidden">
 
-        <img
-          src={propiedad.portada}
-          alt={propiedad.nombre}
-          className="h-56 w-full object-cover transition duration-700 group-hover:scale-110"
-        />
-
+       <Image
+  src={propiedad.portada}
+  alt={propiedad.nombre}
+  width={600}
+  height={400}
+  className="h-56 w-full object-cover transition duration-700 group-hover:scale-110"
+/>
+<div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-100"></div>
         <span
           className={`absolute left-4 top-4 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide text-white ${
             propiedad.tipo === "casa"
@@ -33,26 +44,27 @@ export default function PropertyCard({ propiedad }: Props) {
       {/* Contenido */}
       <div className="p-5">
 
-        <p className="text-sm text-gray-500">
-          📍 {propiedad.ubicacion}
-        </p>
+        <div className="text-sm font-medium text-gray-500">
+  <MapPin size={16} className="text-[#17495B]" />
+  <span>{propiedad.ubicacion}</span>
+</div>
 
-        <h3 className="mt-2 text-2xl font-bold text-gray-900">
+        <h3 className="mt-2 text-3xl font-bold leading-tight text-gray-900">
           {propiedad.nombre}
         </h3>
 
         {propiedad.tipo === "casa" ? (
           <div className="mt-5 flex gap-2 flex-wrap">
 
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm">
-              🛏 {propiedad.caracteristicas.habitaciones}
+            <span className="rounded-full bg-[#F4F7F8] px-3 py-1 text-sm">
+              <BedDouble size={16} /> {propiedad.caracteristicas.habitaciones}
             </span>
 
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm">
+            <span className="rounded-full bg-[#F4F7F8] px-3 py-1 text-sm">
               🚿 {propiedad.caracteristicas.banos}
             </span>
 
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm">
+            <span className="rounded-full bg-[#F4F7F8] px-3 py-1 text-sm">
               🚗 {propiedad.caracteristicas.estacionamiento ? "Sí" : "No"}
             </span>
 
@@ -76,23 +88,28 @@ export default function PropertyCard({ propiedad }: Props) {
         <div className="mt-6 flex items-center justify-between">
 
           <div>
-            <p className="text-xs uppercase tracking-widest text-gray-400">
-              Precio
-            </p>
+           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-gray-400">
+  DESDE
+</p>
 
-            <h4 className="text-3xl font-extrabold text-[#17495B]">
-              ${propiedad.precio.toLocaleString("es-MX")}
+            <h4 className="mt-1 text-4xl font-black tracking-tight text-[#17495B]">
+              ${propiedad.precio.toLocaleString("es-MX")} MXN
             </h4>
           </div>
 
         </div>
 
         <Link
-          href={`/propiedades/${propiedad.id}`}
-          className="mt-6 flex items-center justify-center rounded-xl bg-[#17495B] py-3 font-semibold text-white transition hover:bg-[#123847]"
-        >
-          Ver detalles →
-        </Link>
+  href={`/propiedades/${propiedad.id}`}
+  className="group mt-6 flex items-center justify-center rounded-xl bg-[#17495B] py-3 font-semibold text-white transition-all duration-300 hover:bg-[#123847]"
+>
+  <span>Ver propiedad</span>
+
+  <ArrowRight
+    size={18}
+    className="ml-2 transition-transform duration-300 group-hover:translate-x-2"
+  />
+</Link>
 
       </div>
 
