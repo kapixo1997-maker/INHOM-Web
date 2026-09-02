@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -106,13 +107,21 @@ export default function Hero() {
             </p>
 
             <div className="mt-10 flex flex-wrap gap-5">
-              <button className="rounded-xl bg-[#17495B] px-8 py-4 font-semibold text-white transition duration-300 hover:scale-105 hover:bg-[#123847]">
-               Ver propiedades
-            
-              </button>
+  <Link
+    href="/propiedades"
+    className="rounded-xl bg-[#17495B] px-8 py-4 font-semibold text-white transition duration-300 hover:scale-105 hover:bg-[#123847]"
+  >
+    Ver propiedades
+  </Link>
 
-              <button className="rounded-xl border border-white px-8 py-4 font-semibold text-white transition duration-300 hover:bg-white hover:text-black">
-Hablar con un asesor              </button>
+              <a
+  href="https://wa.me/5219831543460?text=Hola%2C%20me%20gustar%C3%ADa%20recibir%20informaci%C3%B3n%20sobre%20una%20propiedad%20de%20INHOM."
+  target="_blank"
+  rel="noopener noreferrer"
+  className="rounded-xl border border-white px-8 py-4 font-semibold text-white transition duration-300 hover:bg-white hover:text-black"
+>
+  Hablar con un asesor
+</a>
             </div>
 
             <div className="mt-12 flex items-center gap-3">

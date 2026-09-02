@@ -7,11 +7,11 @@ import { motion } from "framer-motion";
 import { Menu, X, MessageCircle } from "lucide-react";
 
 const menu = [
-  { name: "Inicio", href: "#inicio" },
-  { name: "Nosotros", href: "#nosotros" },
-  { name: "Servicios", href: "#servicios" },
-  { name: "Propiedades", href: "#propiedades" },
-  { name: "Contacto", href: "#contacto" },
+  { name: "Inicio", href: "/" },
+  { name: "Nosotros", href: "/nosotros" },
+  { name: "Servicios", href: "/servicios" },
+  { name: "Propiedades", href: "/propiedades" },
+ { name: "Contacto", href: "/contacto" },
 ];
 
 export default function Navbar() {
@@ -24,6 +24,7 @@ export default function Navbar() {
         {/* LOGO */}
         <Link
           href="/"
+          onClick={() => setOpen(false)}
           className="transition-transform duration-300 hover:scale-105"
         >
           <Image
@@ -38,7 +39,7 @@ export default function Navbar() {
         {/* MENÚ ESCRITORIO */}
         <nav className="hidden items-center gap-10 lg:flex">
           {menu.map((item) => (
-            <a
+            <Link
               key={item.name}
               href={item.href}
               className="group relative text-[16px] font-medium text-gray-700 transition-colors duration-300 hover:text-[#17495B]"
@@ -46,13 +47,14 @@ export default function Navbar() {
               {item.name}
 
               <span className="absolute -bottom-2 left-0 h-[2px] w-0 bg-[#17495B] transition-all duration-300 group-hover:w-full" />
-            </a>
+            </Link>
           ))}
         </nav>
 
         {/* LADO DERECHO */}
         <div className="flex items-center gap-4">
 
+          {/* WHATSAPP */}
           <motion.a
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -66,14 +68,15 @@ export default function Navbar() {
           </motion.a>
 
           {/* BOTÓN MÓVIL */}
-
           <button
             onClick={() => setOpen(!open)}
+            aria-label={open ? "Cerrar menú" : "Abrir menú"}
             className="rounded-xl p-2 transition hover:bg-gray-100 lg:hidden"
           >
             {open ? <X size={30} /> : <Menu size={30} />}
           </button>
-                    {/* MENÚ MÓVIL */}
+
+          {/* MENÚ MÓVIL */}
           {open && (
             <motion.div
               initial={{ opacity: 0, y: -15 }}
@@ -85,22 +88,24 @@ export default function Navbar() {
               <nav className="flex flex-col px-6 py-6">
 
                 {menu.map((item) => (
-                  <a
+                  <Link
                     key={item.name}
                     href={item.href}
                     onClick={() => setOpen(false)}
                     className="rounded-xl px-4 py-4 text-lg font-medium text-gray-700 transition hover:bg-[#17495B]/10 hover:text-[#17495B]"
                   >
                     {item.name}
-                  </a>
+                  </Link>
                 ))}
 
+                {/* WHATSAPP MÓVIL */}
                 <motion.a
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   href="https://wa.me/529831543460"
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => setOpen(false)}
                   className="mt-6 flex items-center justify-center gap-3 rounded-xl bg-[#25D366] px-6 py-4 font-semibold text-white shadow-md"
                 >
                   <MessageCircle size={22} />

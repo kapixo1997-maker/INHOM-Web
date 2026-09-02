@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 
 import {
   Home,
@@ -12,11 +13,10 @@ import {
 
 export default function AboutSection() {
   return (
-    <section
-      id="nosotros"
-      className="bg-white py-24"
-    >
-      <div className="mx-auto grid max-w-7xl items-center gap-16 px-6 lg:grid-cols-2">
+    <section id="nosotros" className="bg-white py-24">
+
+      {/* Contenido principal */}
+      <div className="mx-auto grid max-w-7xl items-center gap-16 px-6 lg:grid-cols-2 lg:px-8">
 
         {/* Texto */}
         <motion.div
@@ -48,8 +48,11 @@ export default function AboutSection() {
           <div className="mt-10 grid grid-cols-2 gap-6">
 
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#17495B]/10 text-2xl">
-                <Home size={26} className="text-[#17495B]" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#17495B]/10">
+                <Home
+                  size={26}
+                  className="text-[#17495B]"
+                />
               </div>
 
               <div>
@@ -64,8 +67,11 @@ export default function AboutSection() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#17495B]/10 text-2xl">
-                <Hammer size={26} className="text-[#17495B]" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#17495B]/10">
+                <Hammer
+                  size={26}
+                  className="text-[#17495B]"
+                />
               </div>
 
               <div>
@@ -80,8 +86,11 @@ export default function AboutSection() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#17495B]/10 text-2xl">
-                <Ruler size={26} className="text-[#17495B]" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#17495B]/10">
+                <Ruler
+                  size={26}
+                  className="text-[#17495B]"
+                />
               </div>
 
               <div>
@@ -96,8 +105,11 @@ export default function AboutSection() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#17495B]/10 text-2xl">
-                <FileText size={26} className="text-[#17495B]" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#17495B]/10">
+                <FileText
+                  size={26}
+                  className="text-[#17495B]"
+                />
               </div>
 
               <div>
@@ -113,9 +125,14 @@ export default function AboutSection() {
 
           </div>
 
-          <button className="mt-10 rounded-xl bg-[#17495B] px-8 py-4 font-semibold text-white transition hover:scale-105">
+          {/* Botón */}
+          <Link
+            href="/nosotros"
+            className="mt-10 inline-flex rounded-xl bg-[#17495B] px-8 py-4 font-semibold text-white transition duration-300 hover:scale-105 hover:bg-[#123847]"
+          >
             Conócenos
-          </button>
+          </Link>
+
         </motion.div>
 
         {/* Imagen */}
@@ -171,7 +188,6 @@ export default function AboutSection() {
             <p className="mt-4 text-gray-600">
               {texto}
             </p>
-
           </motion.div>
 
         ))}
