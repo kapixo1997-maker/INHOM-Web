@@ -8,6 +8,8 @@ import {
   MapPin,
   Building2,
   CheckCircle2,
+  FileImage,
+  Maximize2,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
@@ -24,6 +26,7 @@ type PropertyImage = {
   property_id: string;
   storage_path: string;
   orden: number | null;
+  tipo: "foto" | "plano";
 };
 
 export default async function PaginaPropiedad({
@@ -79,18 +82,18 @@ export default async function PaginaPropiedad({
   }
 
   // ==========================================
-  // OBTENER FOTOGRAFÍAS
+  // OBTENER FOTOGRAFÍAS Y PLANOS
   // ==========================================
 
   const { data: imagenesData, error: imagenesError } = await supabase
     .from("property_images")
-    .select("id, property_id, storage_path, orden")
+    .select("id, property_id, storage_path, orden, tipo")
     .eq("property_id", id)
     .order("orden", { ascending: true });
 
   if (imagenesError) {
     console.error(
-      "Error al cargar fotografías de la propiedad:",
+      "Error al cargar imágenes de la propiedad:",
       imagenesError
     );
   }
@@ -111,12 +114,24 @@ export default async function PaginaPropiedad({
   };
 
   // ==========================================
-  // CREAR ARRAY DE URLS PARA LA GALERÍA
+  // SEPARAR FOTOGRAFÍAS Y PLANOS
   // ==========================================
 
-  const imagenesUrls = imagenes.map((imagen) =>
-    getImageUrl(imagen.storage_path)
-  );
+  const fotografias = imagenes
+    .filter((imagen) => imagen.tipo === "foto")
+    .map((imagen) => ({
+      ...imagen,
+      url: getImageUrl(imagen.storage_path),
+    }));
+
+  const planos = imagenes
+    .filter((imagen) => imagen.tipo === "plano")
+    .map((imagen) => ({
+      ...imagen,
+      url: getImageUrl(imagen.storage_path),
+    }));
+
+  const fotografiasUrls = fotografias.map((imagen) => imagen.url);
 
   // ==========================================
   // PRECIO
@@ -168,11 +183,11 @@ export default async function PaginaPropiedad({
         <div className="mx-auto grid max-w-7xl gap-8 px-6 lg:grid-cols-[1.2fr_0.8fr] lg:px-8">
 
           {/* ========================================== */}
-          {/* GALERÍA PROFESIONAL */}
+          {/* GALERÍA DE FOTOGRAFÍAS */}
           {/* ========================================== */}
 
           <GaleriaPropiedad
-            imagenes={imagenesUrls}
+            imagenes={fotografiasUrls}
             titulo={propiedad.titulo}
             operacion={propiedad.operacion}
             tipo={propiedad.tipo}
@@ -193,31 +208,31 @@ export default async function PaginaPropiedad({
 
             {/* UBICACIÓN */}
 
-{ubicacion && (
-  <div className="mt-5 flex items-start gap-2 text-gray-500">
-    <MapPin
-      size={20}
-      className="mt-0.5 shrink-0 text-[#17495B]"
-    />
+            {ubicacion && (
+              <div className="mt-5 flex items-start gap-2 text-gray-500">
+                <MapPin
+                  size={20}
+                  className="mt-0.5 shrink-0 text-[#17495B]"
+                />
 
-    <span>{ubicacion}</span>
-  </div>
-)}
+                <span>{ubicacion}</span>
+              </div>
+            )}
 
-{/* ENLACE DIRECTO A MAPS */}
+            {/* ENLACE DIRECTO A MAPS */}
 
-{propiedad.ubicacion_url && (
-  <a
-    href={propiedad.ubicacion_url}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="mt-4 inline-flex items-center gap-2 rounded-xl border border-[#17495B]/20 bg-[#17495B]/5 px-4 py-3 text-sm font-bold text-[#17495B] transition hover:border-[#17495B] hover:bg-[#17495B] hover:text-white"
-  >
-    <MapPin size={18} />
-    Ver ubicación en Maps
-    <span aria-hidden="true">↗</span>
-  </a>
-)}
+            {propiedad.ubicacion_url && (
+              <a
+                href={propiedad.ubicacion_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl border border-[#17495B]/20 bg-[#17495B]/5 px-4 py-3 text-sm font-bold text-[#17495B] transition hover:border-[#17495B] hover:bg-[#17495B] hover:text-white"
+              >
+                <MapPin size={18} />
+                Ver ubicación en Maps
+                <span aria-hidden="true">↗</span>
+              </a>
+            )}
 
             <p className="mt-7 text-4xl font-black text-[#17495B]">
               {precio}
@@ -353,6 +368,84 @@ export default async function PaginaPropiedad({
             </div>
           </section>
         )}
+
+      {/* ========================================== */}
+      {/* PLANOS DE LA PROPIEDAD */}
+      {/* ========================================== */}
+
+      {planos.length > 0 && (
+        <section className="pb-10">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm">
+
+              {/* ENCABEZADO */}
+
+              <div className="border-b border-gray-100 px-8 py-8 lg:px-10">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#17495B]/10 text-[#17495B]">
+                    <FileImage size={23} />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#17495B]">
+                      Distribución
+                    </p>
+
+                    <h2 className="mt-1 text-3xl font-black text-gray-900">
+                      Planos de la propiedad
+                    </h2>
+
+                    <p className="mt-2 max-w-2xl leading-7 text-gray-500">
+                      Consulta la distribución y organización de los espacios
+                      de esta propiedad.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* PLANOS */}
+
+              <div className="grid gap-6 p-8 sm:grid-cols-2 lg:grid-cols-3 lg:p-10">
+                {planos.map((plano, index) => (
+                  <a
+                    key={plano.id}
+                    href={plano.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 transition duration-300 hover:-translate-y-1 hover:border-[#17495B]/30 hover:shadow-lg"
+                  >
+                    <div className="relative aspect-[4/5] overflow-hidden bg-white">
+                      <img
+                        src={plano.url}
+                        alt={`Plano ${index + 1} de ${propiedad.titulo}`}
+                        className="h-full w-full object-contain p-3 transition duration-500 group-hover:scale-[1.02]"
+                      />
+
+                      <div className="absolute left-4 top-4 rounded-full bg-[#17495B] px-3 py-1.5 text-xs font-black text-white shadow-sm">
+                        Plano {index + 1}
+                      </div>
+
+                      <div className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#17495B] shadow-md transition group-hover:bg-[#17495B] group-hover:text-white">
+                        <Maximize2 size={18} />
+                      </div>
+                    </div>
+
+                    <div className="border-t border-gray-100 bg-white px-5 py-4">
+                      <p className="font-black text-gray-900">
+                        Plano {index + 1}
+                      </p>
+
+                      <p className="mt-1 text-sm text-gray-500">
+                        Toca para ampliar
+                      </p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ========================================== */}
       {/* AVISO FINAL */}

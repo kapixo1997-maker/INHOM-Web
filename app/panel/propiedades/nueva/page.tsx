@@ -28,7 +28,8 @@ import {
 
 import { createClient } from "@/lib/supabase/client";
 
-const MAX_IMAGES = 20;
+const MAX_FOTOS = 50;
+const MAX_PLANOS = 20;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 type SelectedImage = {
@@ -62,6 +63,7 @@ export default function NuevaPropiedadPage() {
   const [construccion, setConstruccion] = useState("");
 
   const [imagenes, setImagenes] = useState<SelectedImage[]>([]);
+  const [planos, setPlanos] = useState<SelectedImage[]>([]);
 
   // ============================================================
   // LIMPIAR PREVIEWS AL SALIR
@@ -69,11 +71,10 @@ export default function NuevaPropiedadPage() {
 
   useEffect(() => {
     return () => {
-      imagenes.forEach((imagen) => {
-        URL.revokeObjectURL(imagen.preview);
-      });
+      imagenes.forEach((imagen) => URL.revokeObjectURL(imagen.preview));
+      planos.forEach((plano) => URL.revokeObjectURL(plano.preview));
     };
-  }, [imagenes]);
+  }, [imagenes, planos]);
 
   // ============================================================
   // SELECCIONAR IMÁGENES
@@ -88,10 +89,10 @@ export default function NuevaPropiedadPage() {
 
     setError("");
 
-    const espaciosDisponibles = MAX_IMAGES - imagenes.length;
+    const espaciosDisponibles = MAX_FOTOS - imagenes.length;
 
     if (espaciosDisponibles <= 0) {
-      setError(`Puedes subir un máximo de ${MAX_IMAGES} fotografías.`);
+      setError(`Puedes subir un máximo de ${MAX_FOTOS} fotografías.`);
       event.target.value = "";
       return;
     }
@@ -130,8 +131,56 @@ export default function NuevaPropiedadPage() {
 
     if (files.length > espaciosDisponibles) {
       setError(
-        `Solo se agregaron ${espaciosDisponibles} fotografías. El máximo es ${MAX_IMAGES}.`
+        `Solo se agregaron ${espaciosDisponibles} fotografías. El máximo es ${MAX_FOTOS}.`
       );
+    }
+
+    event.target.value = "";
+  };
+
+  // ============================================================
+  // SELECCIONAR PLANOS
+  // ============================================================
+
+  const handlePlanosChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+
+    if (files.length === 0) return;
+
+    setError("");
+
+    const espaciosDisponibles = MAX_PLANOS - planos.length;
+
+    if (espaciosDisponibles <= 0) {
+      setError(`Puedes subir un máximo de ${MAX_PLANOS} planos.`);
+      event.target.value = "";
+      return;
+    }
+
+    const archivosSeleccionados = files.slice(0, espaciosDisponibles);
+
+    if (archivosSeleccionados.some((file) => !file.type.startsWith("image/"))) {
+      setError("Los planos deben subirse como imágenes.");
+      event.target.value = "";
+      return;
+    }
+
+    if (archivosSeleccionados.some((file) => file.size > MAX_FILE_SIZE)) {
+      setError("Cada plano debe pesar máximo 10 MB.");
+      event.target.value = "";
+      return;
+    }
+
+    const nuevosPlanos: SelectedImage[] = archivosSeleccionados.map((file) => ({
+      id: `${crypto.randomUUID()}-${file.name}`,
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+
+    setPlanos((actuales) => [...actuales, ...nuevosPlanos]);
+
+    if (files.length > espaciosDisponibles) {
+      setError(`Solo se agregaron ${espaciosDisponibles} planos. El máximo es ${MAX_PLANOS}.`);
     }
 
     event.target.value = "";
@@ -149,6 +198,14 @@ export default function NuevaPropiedadPage() {
         URL.revokeObjectURL(imagen.preview);
       }
 
+      return actuales.filter((item) => item.id !== id);
+    });
+  };
+
+  const eliminarPlanoSeleccionado = (id: string) => {
+    setPlanos((actuales) => {
+      const plano = actuales.find((item) => item.id === id);
+      if (plano) URL.revokeObjectURL(plano.preview);
       return actuales.filter((item) => item.id !== id);
     });
   };
@@ -309,12 +366,55 @@ export default function NuevaPropiedadPage() {
             storage_path: storagePath,
             public_url: publicUrl,
             orden: index,
+            tipo: "foto",
           });
 
         if (imageInsertError) {
           throw new Error(
             `La fotografía se subió, pero no pudo registrarse: ${imageInsertError.message}`
           );
+        }
+      }
+
+      // ----------------------------------------------------------
+      // 4. SUBIR PLANOS
+      // ----------------------------------------------------------
+      for (let index = 0; index < planos.length; index++) {
+        const plano = planos[index];
+        const extension = obtenerExtension(plano.file);
+        const nombreArchivo = `plano-${String(index + 1).padStart(2, "0")}-${crypto.randomUUID()}.${extension}`;
+        const storagePath = `${propertyId}/planos/${nombreArchivo}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("property-images")
+          .upload(storagePath, plano.file, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: plano.file.type || undefined,
+          });
+
+        if (uploadError) {
+          throw new Error(`No se pudo subir el plano "${plano.file.name}": ${uploadError.message}`);
+        }
+
+        archivosSubidos.push(storagePath);
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("property-images")
+          .getPublicUrl(storagePath);
+
+        const { error: planoInsertError } = await supabase
+          .from("property_images")
+          .insert({
+            property_id: propertyId,
+            storage_path: storagePath,
+            public_url: publicUrl,
+            orden: index,
+            tipo: "plano",
+          });
+
+        if (planoInsertError) {
+          throw new Error(`El plano se subió, pero no pudo registrarse: ${planoInsertError.message}`);
         }
       }
     } catch (imageError) {
@@ -360,15 +460,13 @@ export default function NuevaPropiedadPage() {
     }
 
     // ------------------------------------------------------------
-    // 4. TODO CORRECTO
+    // 5. TODO CORRECTO
     // ------------------------------------------------------------
 
     setSuccess(
-      imagenes.length > 0
-        ? `Propiedad enviada correctamente con ${imagenes.length} ${
-            imagenes.length === 1 ? "fotografía" : "fotografías"
-          }.`
-        : "Propiedad enviada correctamente para revisión."
+      `Propiedad enviada correctamente${
+        imagenes.length > 0 ? ` con ${imagenes.length} fotografía${imagenes.length === 1 ? "" : "s"}` : ""
+      }${planos.length > 0 ? ` y ${planos.length} plano${planos.length === 1 ? "" : "s"}` : ""}.`
     );
 
     setLoading(false);
@@ -810,7 +908,7 @@ export default function NuevaPropiedadPage() {
                 </h3>
 
                 <p className="mt-1 text-sm text-gray-500">
-                  Puedes agregar hasta {MAX_IMAGES} fotografías. La primera
+                  Puedes agregar hasta {MAX_FOTOS} fotografías. La primera
                   imagen será utilizada como portada.
                 </p>
               </div>
@@ -842,7 +940,7 @@ export default function NuevaPropiedadPage() {
                 type="file"
                 accept="image/*"
                 multiple
-                disabled={loading || imagenes.length >= MAX_IMAGES}
+                disabled={loading || imagenes.length >= MAX_FOTOS}
                 onChange={handleImagesChange}
                 className="hidden"
               />
@@ -861,7 +959,7 @@ export default function NuevaPropiedadPage() {
               </p>
 
               <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-600">
-                {imagenes.length}/{MAX_IMAGES}
+                {imagenes.length}/{MAX_FOTOS}
               </span>
             </div>
 
@@ -922,6 +1020,83 @@ export default function NuevaPropiedadPage() {
             </div>
           </div>
 
+          <div className="my-10 border-t border-gray-200" />
+
+          {/* PLANOS */}
+          <div>
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#17495B]/10 text-[#17495B]">
+                <Ruler size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-gray-900">Planos de la propiedad</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Sube aquí plantas arquitectónicas, distribución, planta baja, planta alta u otros planos.
+                </p>
+              </div>
+            </div>
+
+            <label
+              htmlFor="planos"
+              className="mt-6 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-10 text-center transition hover:border-[#17495B] hover:bg-[#17495B]/5"
+            >
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-[#17495B] shadow-sm">
+                <UploadCloud size={27} />
+              </div>
+              <p className="mt-4 font-bold text-gray-900">Seleccionar planos</p>
+              <p className="mt-1 text-sm text-gray-500">JPG, JPEG, PNG, WEBP, HEIC u otras imágenes compatibles.</p>
+              <p className="mt-1 text-xs text-gray-400">Máximo 10 MB por plano</p>
+              <input
+                id="planos"
+                type="file"
+                accept="image/*"
+                multiple
+                disabled={loading || planos.length >= MAX_PLANOS}
+                onChange={handlePlanosChange}
+                className="hidden"
+              />
+            </label>
+
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-sm font-medium text-gray-500">
+                {planos.length === 0
+                  ? "Todavía no has seleccionado planos."
+                  : `${planos.length} ${planos.length === 1 ? "plano seleccionado" : "planos seleccionados"}`}
+              </p>
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-600">
+                {planos.length}/{MAX_PLANOS}
+              </span>
+            </div>
+
+            {planos.length > 0 && (
+              <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                {planos.map((plano, index) => (
+                  <div key={plano.id} className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-gray-100">
+                    <div className="aspect-[4/3]">
+                      <img src={plano.preview} alt={`Plano ${index + 1}`} className="h-full w-full object-cover" />
+                    </div>
+                    <div className="absolute left-2 top-2 rounded-full bg-[#17495B] px-3 py-1 text-xs font-bold text-white shadow">
+                      Plano {index + 1}
+                    </div>
+                    <button
+                      type="button"
+                      disabled={loading}
+                      onClick={() => eliminarPlanoSeleccionado(plano.id)}
+                      className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-black/70 text-white shadow transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                      aria-label={`Eliminar plano ${index + 1}`}
+                    >
+                      <X size={18} />
+                    </button>
+                    <div className="flex items-center gap-2 bg-white px-3 py-2">
+                      <Ruler size={15} className="shrink-0 text-[#17495B]" />
+                      <p className="truncate text-xs font-medium text-gray-600">{plano.file.name}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* MENSAJES */}
           {error && (
             <div className="mt-8 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
@@ -952,7 +1127,7 @@ export default function NuevaPropiedadPage() {
               {loading ? (
                 <>
                   <Loader2 size={19} className="animate-spin" />
-                  {imagenes.length > 0
+                  {imagenes.length > 0 || planos.length > 0
                     ? "Subiendo propiedad..."
                     : "Guardando..."}
                 </>
