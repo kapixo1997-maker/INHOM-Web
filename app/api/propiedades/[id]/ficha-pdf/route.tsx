@@ -1206,8 +1206,12 @@
     .filter(
       (url: string | null): url is string => Boolean(url)
     );
-
-      /* =========================
+    
+console.log("FOTOS PDF:", fotos);
+console.log("PLANOS PDF:", planos);
+console.log("FILAS DE IMAGENES:", imageRows);
+    
+    /* =========================
         ASESOR
       ========================= */
 
