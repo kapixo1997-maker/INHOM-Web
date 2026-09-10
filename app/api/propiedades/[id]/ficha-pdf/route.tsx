@@ -1190,35 +1190,22 @@ if (!img.storage_path) {
     ===================================================== */
 
     const fotos = (imageRows || [])
-  .filter(
-    (img: any) =>
-      img.tipo === "foto" ||
-      img.tipo === null ||
-      img.tipo === undefined ||
-      img.tipo === ""
-  )
+  .filter((img: any) => img.tipo === "foto")
   .map(getImageUrl)
   .filter(
-    (url: string | null): url is string =>
-      Boolean(url)
+    (url: string | null): url is string => Boolean(url)
   );
-    /* =====================================================
-       SEPARAR PLANOS
-    ===================================================== */
 
-    const planos = (imageRows || [])
-  .filter(
-    (img: any) =>
-      img.tipo === "plano"
-  )
+/* =====================================================
+   SEPARAR PLANOS
+===================================================== */
+
+const planos = (imageRows || [])
+  .filter((img: any) => img.tipo === "plano")
   .map(getImageUrl)
   .filter(
-    (url: string | null): url is string =>
-      Boolean(url)
+    (url: string | null): url is string => Boolean(url)
   );
-    console.log(
-      `PDF propiedad ${id}: ${fotos.length} fotos / ${planos.length} planos`
-    );
 
     /* =========================
        ASESOR
