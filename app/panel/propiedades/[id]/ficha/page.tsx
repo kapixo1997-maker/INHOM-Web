@@ -28,6 +28,8 @@ type PropertyImage = {
   property_id: string;
   storage_path: string;
   orden: number | null;
+  public_url: string | null;
+  tipo: "foto" | "plano";
 };
 
 export default async function FichaPropiedadPage({ params }: PageProps) {
@@ -87,14 +89,25 @@ export default async function FichaPropiedadPage({ params }: PageProps) {
 
   const imagenes: PropertyImage[] =
     (imagenesData as PropertyImage[] | null) ?? [];
-
+    
+    const fotos = imagenes.filter((img) => img.tipo === "foto");
+const planos = imagenes.filter((img) => img.tipo === "plano");
+    
   const getImageUrl = (storagePath: string) => {
-    const { data } = supabase.storage
-      .from("property-images")
-      .getPublicUrl(storagePath);
+  const imagen = imagenes.find(
+    (img) => img.storage_path === storagePath
+  );
 
-    return data.publicUrl;
-  };
+  if (imagen?.public_url) {
+    return imagen.public_url;
+  }
+
+  const { data } = supabase.storage
+    .from("property-images")
+    .getPublicUrl(storagePath);
+
+  return data.publicUrl;
+};
 
   let asesor: {
     nombre: string | null;
@@ -175,10 +188,10 @@ export default async function FichaPropiedadPage({ params }: PageProps) {
       <article className="mx-auto w-full max-w-[1100px] overflow-hidden bg-white shadow-xl print:w-[210mm] print:max-w-none print:shadow-none">
         {/* Portada */}
         <section className="relative min-h-[760px] bg-[#123E4C] text-white print:min-h-[277mm]">
-          {imagenes[0] ? (
+          {fotos[0] ? (
             <>
               <img
-                src={getImageUrl(imagenes[0].storage_path)}
+                src={getImageUrl(fotos[0].storage_path)}
                 alt={`Portada de ${propiedad.titulo}`}
                 className="absolute inset-0 h-full w-full object-cover"
               />
@@ -311,10 +324,10 @@ export default async function FichaPropiedadPage({ params }: PageProps) {
 
             <div className="mt-6 grid grid-cols-2 gap-4">
               <div className="relative overflow-hidden rounded-[24px] bg-[#EEF2F1]">
-                {imagenes[1] || imagenes[0] ? (
+                {fotos[1] || fotos[0] ? (
                   <>
                     <img
-                      src={getImageUrl((imagenes[1] || imagenes[0]).storage_path)}
+                      src={getImageUrl((fotos[1] || fotos[0]).storage_path)}
                       alt={`${propiedad.titulo} - espacio principal`}
                       className="h-[250px] w-full object-cover"
                     />
@@ -332,10 +345,10 @@ export default async function FichaPropiedadPage({ params }: PageProps) {
               </div>
 
               <div className="relative overflow-hidden rounded-[24px] bg-[#EEF2F1]">
-                {imagenes[2] || imagenes[0] ? (
+                {fotos[2] || fotos[0] ? (
                   <>
                     <img
-                      src={getImageUrl((imagenes[2] || imagenes[0]).storage_path)}
+                      src={getImageUrl((fotos[2] || fotos[0]).storage_path)}
                       alt={`${propiedad.titulo} - espacio complementario`}
                       className="h-[250px] w-full object-cover"
                     />
@@ -400,23 +413,23 @@ export default async function FichaPropiedadPage({ params }: PageProps) {
             <img src="/logo/inhom-logo.png" alt="INHOM Bienes Raíces" className="h-auto w-[125px] object-contain" />
           </div>
 
-          {imagenes.length > 1 ? (
+          {fotos.length > 1 ? (
             <div className="grid grid-cols-12 gap-3">
               <div className="col-span-7 overflow-hidden rounded-[24px] bg-[#EEF2F1]">
-                <img src={getImageUrl((imagenes[1] || imagenes[0]).storage_path)} alt={`${propiedad.titulo} - galería principal`} className="h-[300px] w-full object-cover" />
+                <img src={getImageUrl((fotos[1] || fotos[0]).storage_path)}alt={`${propiedad.titulo} - galería principal`} className="h-[300px] w-full object-cover" />
               </div>
               <div className="col-span-5 grid gap-3">
                 <div className="overflow-hidden rounded-[20px] bg-[#EEF2F1]">
-                  <img src={getImageUrl((imagenes[2] || imagenes[0]).storage_path)} alt={`${propiedad.titulo} - galería`} className="h-[144px] w-full object-cover" />
+                  <img src={getImageUrl((fotos[2] || fotos[0]).storage_path)} alt={`${propiedad.titulo} - galería`} className="h-[144px] w-full object-cover" />
                 </div>
                 <div className="overflow-hidden rounded-[20px] bg-[#EEF2F1]">
-                  <img src={getImageUrl((imagenes[3] || imagenes[1] || imagenes[0]).storage_path)} alt={`${propiedad.titulo} - galería`} className="h-[144px] w-full object-cover" />
+                  <img src={getImageUrl((fotos[3] || fotos[1] || fotos[0]).storage_path)} alt={`${propiedad.titulo} - galería`} className="h-[144px] w-full object-cover" />
                 </div>
               </div>
             </div>
-          ) : imagenes[0] ? (
+          ) : fotos[0] ? (
             <div className="relative overflow-hidden rounded-[26px] bg-[#EEF2F1]">
-              <img src={getImageUrl(imagenes[0].storage_path)} alt={`${propiedad.titulo} - vista general`} className="h-[300px] w-full object-cover" />
+              <img src={getImageUrl(fotos[0].storage_path)} alt={`${propiedad.titulo} - vista general`} className="h-[300px] w-full object-cover" />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-6 pb-5 pt-16">
                 <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white">Vista general de la propiedad</p>
               </div>
