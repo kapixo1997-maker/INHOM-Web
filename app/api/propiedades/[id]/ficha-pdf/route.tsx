@@ -1167,13 +1167,17 @@ export async function GET(
        * usamos esa.
        */
       if (img.public_url) {
-        return img.public_url;
-      }
+  return img.public_url;
+}
 
-      /*
-       * Si no existe public_url,
-       * la generamos desde storage_path.
-       */
+if (!img.storage_path) {
+  return null;
+}
+
+/*
+ * Si no existe public_url,
+ * la generamos desde storage_path.
+ */
       const { data } = supabase.storage
         .from("property-images")
         .getPublicUrl(img.storage_path);
@@ -1186,24 +1190,32 @@ export async function GET(
     ===================================================== */
 
     const fotos = (imageRows || [])
-      .filter(
-        (img: any) =>
-          !img.tipo || img.tipo === "foto"
-      )
-      .map(getImageUrl)
-      .filter(Boolean);
-
+  .filter(
+    (img: any) =>
+      img.tipo === "foto" ||
+      img.tipo === null ||
+      img.tipo === undefined ||
+      img.tipo === ""
+  )
+  .map(getImageUrl)
+  .filter(
+    (url: string | null): url is string =>
+      Boolean(url)
+  );
     /* =====================================================
        SEPARAR PLANOS
     ===================================================== */
 
     const planos = (imageRows || [])
-      .filter(
-        (img: any) => img.tipo === "plano"
-      )
-      .map(getImageUrl)
-      .filter(Boolean);
-
+  .filter(
+    (img: any) =>
+      img.tipo === "plano"
+  )
+  .map(getImageUrl)
+  .filter(
+    (url: string | null): url is string =>
+      Boolean(url)
+  );
     console.log(
       `PDF propiedad ${id}: ${fotos.length} fotos / ${planos.length} planos`
     );
